@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D/AR GLB Viewer</title>
+    <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .viewer-container {
+            position: relative;
+            width: 100%;
+            height: 70vh;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        model-viewer {
+            width: 100%;
+            height: 100%;
+            --poster-color: #ffffff00;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .btn:hover {
+            background-color: #45a049;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .btn:active {
+            transform: translateY(2px);
+        }
+        .btn-secondary {
+            background-color: #008CBA;
+        }
+        .btn-secondary:hover {
+            background-color: #007B9A;
+        }
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .ar-prompt {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .viewer-container {
+                height: 50vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bella Bathware Model Viewer</h1>
+        <div class="viewer-container">
+            <model-viewer 
+                src="CM 366422-NSP&CM 366423-NSP.glb"
+                ios-src="path/to/your/model.usdz"
+                alt="3D model"
+                ar
+                ar-modes="webxr scene-viewer quick-look"
+                camera-controls
+                auto-rotate
+                camera-orbit="0deg 75deg 105%"
+                interaction-prompt="none">
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+                <div class="ar-prompt">
+                    Tap and move your phone to place the object
+                </div>
+            </model-viewer>
+        </div>
+        <div class="controls">
+            <button id="ar-button" class="btn">View in your space</button>
+            <button id="rotate-toggle" class="btn btn-secondary">Pause Rotation</button>
+        </div>
+    </div>
+
+    <script>
+        const modelViewer = document.querySelector("model-viewer");
+        const arButton = document.getElementById("ar-button");
+        const rotateToggle = document.getElementById("rotate-toggle");
+        const loadingElement = document.querySelector(".loading");
+        const arPrompt = document.querySelector(".ar-prompt");
+
+        modelViewer.addEventListener("load", () => {
+            loadingElement.style.display = "none";
+        });
+
+        arButton.addEventListener("click", () => {
+            if (modelViewer.canActivateAR) {
+                modelViewer.activateAR();
+                arPrompt.style.display = "block";
+                setTimeout(() => {
+                    arPrompt.style.display = "none";
+                }, 3000);
+            } else {
+                alert("AR is not supported on this device");
+            }
+        });
+
+        let isRotating = true;
+        rotateToggle.addEventListener("click", () => {
+            isRotating = !isRotating;
+            modelViewer.autoRotate = isRotating;
+            rotateToggle.textContent = isRotating ? "Pause Rotation" : "Resume Rotation";
+        });
+
+        // Ensure the loading spinner is hidden if the model fails to load
+        modelViewer.addEventListener("error", () => {
+            loadingElement.style.display = "none";
+            alert("Error loading the 3D model. Please try again later.");
+        });
+    </script>
+</body>
+</html>
